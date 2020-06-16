@@ -13,6 +13,7 @@ namespace FlightMobileApp
         {
             this.telnetClient = telnetClient;
             //stop = false;
+            //test
         }
 
         public void Connect()
