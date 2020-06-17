@@ -11,6 +11,7 @@ namespace FlightMobileApp
         public Command Command { get; private set; }
         public Task<Result> Task { get => Completion.Task; }
         public TaskCompletionSource<Result> Completion { get; private set; }
+        public Boolean isGet { get; set; }
         public AsyncCommand(Command input)
         {
             Command = input;
