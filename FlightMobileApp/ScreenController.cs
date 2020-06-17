@@ -18,10 +18,15 @@ namespace FlightMobileApp
     {
         [Route("")]
         // GET: /screenshot
-        public IActionResult Getscreentshot()
+        public ActionResult Getscreentshot()
         {
-            Byte[] b = System.IO.File.ReadAllBytes(@"E:\\Test.jpg");    
-            return File(b, "image/jpeg");
+            string url = "http://127.0.0.1:8080/screenshot";
+            HttpWebRequest myRequest = (HttpWebRequest)WebRequest.Create(url);
+            WebResponse myResponse = myRequest.GetResponse();
+            MemoryStream ms = new MemoryStream();
+            myResponse.GetResponseStream().CopyTo(ms);
+            byte[] data = ms.ToArray();
+            return File(data, "image/jpeg");
         }
     }
 }
