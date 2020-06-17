@@ -19,7 +19,7 @@ namespace FlightMobileApp
         {
             Boolean isGet = true;
             var contentt = await this.telnetClient.Execute(cmd, isGet);
-            cmd = JsonConvert.DeserializeObject<Command>(contentt);
+            cmd = JsonConvert.DeserializeObject<Command>(cmd.ToString());
             return cmd;
         }
 
@@ -29,7 +29,7 @@ namespace FlightMobileApp
             Boolean isGet = false;
             cmd = newC;
             var contentt = await this.telnetClient.Execute(cmd, isGet);
-            cmd = JsonConvert.DeserializeObject<Command>(contentt);
+            cmd = JsonConvert.DeserializeObject<Command>(cmd.ToString());
             return cmd;
         }
     }
