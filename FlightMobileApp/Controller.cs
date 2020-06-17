@@ -7,9 +7,9 @@ namespace FlightMobileApp
 {
     public class Controller
     {
-        SimulactorClient telnetClient;
+        SimulatorClient telnetClient;
         private Command c;
-        public Controller(SimulactorClient telnetClient)
+        public Controller(SimulatorClient telnetClient)
         {
             this.telnetClient = telnetClient;
             //stop = false;
