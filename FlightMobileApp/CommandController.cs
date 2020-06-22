@@ -12,7 +12,7 @@ using Microsoft.AspNetCore.Routing;
 using System.Diagnostics;
 using Microsoft.Extensions.Hosting.Internal;
 using static System.Net.Mime.MediaTypeNames;
-using RouteAttribute = System.Web.Http.RouteAttribute;
+//using RouteAttribute = System.Web.Http.RouteAttribute;
 
 // For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -26,16 +26,17 @@ namespace FlightMobileApp
         public CommandController()
         {
             this.telnetClient = new SimulatorClient();
+            telnetClient.Start();
         }
 
         // GET: /<controller>/
-        public async Task<ActionResult<Command>> Get()
-        {
-            Boolean isGet = true;
-            var contentt = await this.telnetClient.Execute(cmd, isGet);
-            cmd = JsonConvert.DeserializeObject<Command>(cmd.ToString());
-            return cmd;
-        }
+        //public async Task<ActionResult<Command>> Get()
+        //{
+        //    Boolean isGet = true;
+        //    var contentt = await this.telnetClient.Execute(cmd, isGet);
+        //    cmd = JsonConvert.DeserializeObject<Command>(cmd.ToString());
+        //    return cmd;
+        //}
 
         [Route("api/command")]
         [HttpPost]
@@ -58,18 +59,18 @@ namespace FlightMobileApp
             Console.WriteLine("AFTERRRRRR");
             return cmd;
         }
+
         [Route("screenshot")]
         [HttpGet]
-        // GET: /screenshot
-        public IActionResult Getscreentshot()
+        public IActionResult GetScreenshot()
         {
             ScreenController s = new ScreenController();
-            Byte[] data = s.GetImage();
+            byte[] data = s.GetImage();
             if (data == null)
             {
                 return NotFound();
             }
-            return Ok(File(data, "image/jpeg"));
+            return File(data, "image/jpeg");
         }
     }
 }

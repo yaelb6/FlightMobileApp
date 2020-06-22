@@ -17,10 +17,11 @@ namespace FlightMobileApp
         public SimulatorClient()
         {
             commandsQueue = new BlockingCollection<AsyncCommand>();
-            tcpClient = new TcpClient();
             //Define Ip and port from app config.
             connectionIp = "127.0.0.1";
-            connectionPort = 5402;
+            connectionPort = 5403;
+            tcpClient = new TcpClient(connectionIp, connectionPort);
+
         }
         // Called by the WebApi Controller, it will await on the returned Task<>
         // This is not an async method, since it does not await anything.
@@ -38,7 +39,7 @@ namespace FlightMobileApp
 
         public void ProcessCommands()
         {
-            tcpClient.Connect(connectionIp, connectionPort);
+            //tcpClient.Connect(connectionIp, connectionPort);
             NetworkStream stream = tcpClient.GetStream();
             foreach (AsyncCommand command in commandsQueue.GetConsumingEnumerable())
             {
