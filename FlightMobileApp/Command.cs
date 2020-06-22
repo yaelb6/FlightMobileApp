@@ -17,20 +17,26 @@ namespace FlightMobileApp
         [JsonProperty("rudder")]
         public double Rudder { get; set; }
 
-        [JsonPropertyName("throttle")]
-        [JsonProperty("throttle")]
-        public double Throttle { get; set; }
-
         [JsonPropertyName("elevator")]
         [JsonProperty("elevator")]
         public double Elevator { get; set; }
 
-        public Command(double Aileron1, double Rudder1, double Throttle1, double Elevator1)
+        [JsonPropertyName("throttle")]
+        [JsonProperty("throttle")]
+        public double Throttle { get; set; }
+
+        [JsonConstructor]
+        public Command(double aileron, double rudder, double elevator, double throttle)
         {
-            Aileron = Aileron1;
-            Rudder = Rudder1;
-            Throttle = Throttle1;
-            Elevator = Elevator1;
+            Aileron = aileron;
+            Rudder = rudder;
+            Elevator = elevator;
+            Throttle = throttle;
+            
+        }
+
+        public Command()
+        {
         }
     }
 }
