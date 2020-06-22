@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Hosting.Internal;
 using static System.Net.Mime.MediaTypeNames;
 using RouteAttribute = System.Web.Http.RouteAttribute;
+//using static System.Net.Mime.MediaTypeNames;
 
 // For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -29,6 +30,7 @@ namespace FlightMobileApp
             MemoryStream ms = new MemoryStream();
             myResponse.GetResponseStream().CopyTo(ms);
             byte[] data = ms.ToArray();
+
             return data;
             //if (data == null)
             //{
