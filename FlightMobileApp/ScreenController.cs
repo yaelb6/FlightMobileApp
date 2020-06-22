@@ -15,12 +15,13 @@ using RouteAttribute = System.Web.Http.RouteAttribute;
 
 namespace FlightMobileApp
 {
-    [Route("screenshot")]
-    public class ScreenController : Controller
+    //[Route("screenshot")]
+    public class ScreenController
     {
-        [Route("")]
+        public ScreenController() { }
+        //[Route("")]
         // GET: /screenshot
-        public IActionResult Getscreentshot()
+        public byte[] GetImage()
         {
             string url = "http://127.0.0.1:8080/screenshot";
             HttpWebRequest myRequest = (HttpWebRequest)WebRequest.Create(url);
@@ -28,11 +29,12 @@ namespace FlightMobileApp
             MemoryStream ms = new MemoryStream();
             myResponse.GetResponseStream().CopyTo(ms);
             byte[] data = ms.ToArray();
-            if (data == null)
-            {
-                return NotFound();
-            }
-            return Ok(File(data, "image/jpeg"));
+            return data;
+            //if (data == null)
+            //{
+            //    return NotFound();
+            //}
+            //return Ok(File(data, "image/jpeg"));
         }
     }
 }
