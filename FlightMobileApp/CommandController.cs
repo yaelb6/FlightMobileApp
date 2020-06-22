@@ -1,12 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Net;
+using System.Net.Http;
 using System.Threading.Tasks;
+//using System.Web.Http;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using Microsoft.AspNetCore.Routing;
 using System.Diagnostics;
-using Newtonsoft.Json.Linq;
+using Microsoft.Extensions.Hosting.Internal;
+using static System.Net.Mime.MediaTypeNames;
+using RouteAttribute = System.Web.Http.RouteAttribute;
 
 // For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -34,7 +40,7 @@ namespace FlightMobileApp
         [Route("api/command")]
         [HttpPost]
         // POST: /<controller>/
-        public async Task<ActionResult<Command>> Post([FromBody] Command newC)
+        public async Task<ActionResult<Command>> Post([FromBody]Command newC)
         {
             Debug.WriteLine("IN POST");
             Console.WriteLine("IN POST");
@@ -51,6 +57,19 @@ namespace FlightMobileApp
             Debug.WriteLine("AFTERRRRRR");
             Console.WriteLine("AFTERRRRRR");
             return cmd;
+        }
+        [Route("screenshot")]
+        [HttpGet]
+        // GET: /screenshot
+        public IActionResult Getscreentshot()
+        {
+            ScreenController s = new ScreenController();
+            Byte[] data = s.GetImage();
+            if (data == null)
+            {
+                return NotFound();
+            }
+            return Ok(File(data, "image/jpeg"));
         }
     }
 }
