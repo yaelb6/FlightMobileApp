@@ -21,6 +21,7 @@ namespace FlightMobileApp
     public class CommandController : Controller
     {
         private SimulatorClient telnetClient;
+        private Boolean firstTime = false;
         public Command cmd { get; set; }
 
         public CommandController()
@@ -64,6 +65,11 @@ namespace FlightMobileApp
         [HttpGet]
         public IActionResult GetScreenshot()
         {
+            if (firstTime == false)
+            {
+                firstTime = true;
+                telnetClient.firstConnection();
+            }
             ScreenController s = new ScreenController();
             byte[] data = s.GetImage();
             if (data == null)
