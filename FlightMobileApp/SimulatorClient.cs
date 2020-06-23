@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Net.Sockets;
 using System.Threading.Tasks;
@@ -11,7 +12,7 @@ namespace FlightMobileApp
     public class SimulatorClient
     {
         private readonly BlockingCollection<AsyncCommand> commandsQueue;
-        private readonly TcpClient tcpClient;
+        private TcpClient tcpClient;
         string connectionIp;
         int connectionPort;
         public SimulatorClient()
@@ -20,7 +21,8 @@ namespace FlightMobileApp
             //Define Ip and port from app config.
             connectionIp = "127.0.0.1";
             connectionPort = 5403;
-            tcpClient = new TcpClient(connectionIp, connectionPort);
+            firstConnection();
+            //tcpClient = new TcpClient(connectionIp, connectionPort);
 
         }
         // Called by the WebApi Controller, it will await on the returned Task<>
@@ -39,7 +41,6 @@ namespace FlightMobileApp
 
         public void ProcessCommands()
         {
-            //tcpClient.Connect(connectionIp, connectionPort);
             NetworkStream stream = tcpClient.GetStream();
             foreach (AsyncCommand command in commandsQueue.GetConsumingEnumerable())
             {
@@ -49,7 +50,7 @@ namespace FlightMobileApp
                 if (command.isGet == true)
                 {
                     message = "get /controls/flight/rudder\n";
-                    response = GetAndSet(message, stream);
+                    response = GetAndSet(message, stream,true);
                     if (!response.Equals("disconnected"))
                     {
                         command.Command.Rudder = Double.Parse(response);
@@ -59,7 +60,7 @@ namespace FlightMobileApp
                         res = Result.NotOk;
                     }
                     message = "get /controls/flight/throttle\n";
-                    response = GetAndSet(message, stream);
+                    response = GetAndSet(message, stream,true);
                     if (!response.Equals("disconnected"))
                     {
                         command.Command.Throttle = Double.Parse(response);
@@ -69,7 +70,7 @@ namespace FlightMobileApp
                         res = Result.NotOk;
                     }
                     message = "get /controls/flight/elevator\n";
-                    response = GetAndSet(message, stream);
+                    response = GetAndSet(message, stream,true);
                     if (!response.Equals("disconnected"))
                     {
                         command.Command.Elevator = Double.Parse(response);
@@ -79,7 +80,7 @@ namespace FlightMobileApp
                         res = Result.NotOk;
                     }
                     message = "get /controls/flight/aileron\n";
-                    response = GetAndSet(message, stream);
+                    response = GetAndSet(message, stream,true);
                     if (!response.Equals("disconnected"))
                     {
                         command.Command.Aileron = Double.Parse(response);
@@ -93,28 +94,28 @@ namespace FlightMobileApp
                 else
                 {
                     message = "set /controls/flight/rudder " + command.Command.Rudder + "\n";
-                    response = GetAndSet(message, stream);
+                    response = GetAndSet(message, stream,false);
                     //send error to client
                     if (response.Equals("disconnected"))
                     {
                         res = Result.NotOk;
                     }
                     message = "set /controls/flight/throttle " + command.Command.Throttle + "\n";
-                    response = GetAndSet(message, stream);
+                    response = GetAndSet(message, stream,false);
                     //send error to client
                     if (response.Equals("disconnected"))
                     {
                         res = Result.NotOk;
                     }
                     message = "set /controls/flight/elevator " + command.Command.Elevator + "\n";
-                    response = GetAndSet(message, stream);
+                    response = GetAndSet(message, stream,false);
                     //send error to client
                     if (response.Equals("disconnected"))
                     {
                         res = Result.NotOk;
                     }
                     message = "set /controls/flight/aileron " + command.Command.Aileron + "\n";
-                    response = GetAndSet(message, stream);
+                    response = GetAndSet(message, stream,false);
                     //send error to client
                     if (response.Equals("disconnected"))
                     {
@@ -124,7 +125,7 @@ namespace FlightMobileApp
                 command.Completion.SetResult(res);
             }
         }
-        public string GetAndSet(string message, NetworkStream stream)
+        public string GetAndSet(string message, NetworkStream stream, Boolean isGet)
         {
             // Receive the TcpServer.response.
             Byte[] data = System.Text.Encoding.ASCII.GetBytes(message);
@@ -139,21 +140,31 @@ namespace FlightMobileApp
             // Send the message to the connected TcpServer - the server need to know what kind of data I want. 
             stream.Write(data, 0, data.Length);
             String responseData = String.Empty;
-            // Read the first batch of the TcpServer response bytes.
-            //if (stream.CanRead)
-            //{
-            //    Int32 bytes = stream.Read(data, 0, data.Length);
-            //    responseData = System.Text.Encoding.ASCII.GetString(data, 0, bytes);
-            //    return responseData;
-            //}
-            //else
-            //{
-            //    return "disconnected";
-            //}
-            return "ok";
+            if (isGet == true) {
+                //Read the first batch of the TcpServer response bytes.
+                NetworkStream streamRead = tcpClient.GetStream();
+                if (streamRead.CanRead)
+                {
+                    //firstConnection();
+                    Byte[] readData = new byte[1024];
+                    //Debug.WriteLine("POSITION= ",stream.Position);
+                    int bytes = streamRead.Read(readData, 0, 1024);
+                    responseData = System.Text.Encoding.ASCII.GetString(readData, 0, bytes);
+                    return responseData;
+                }
+                else
+                {
+                    return "disconnected";
+                }
+            }
+            else
+            {
+                return "ok";
+            }
         }
         public void firstConnection()
         {
+            tcpClient = new TcpClient(connectionIp, connectionPort);
             NetworkStream stream = tcpClient.GetStream();
             Byte[] data = System.Text.Encoding.ASCII.GetBytes("data\n");
             // Send the message to the connected TcpServer - the server need to know what kind of data I want. 
