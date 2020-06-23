@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authentication;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -44,112 +45,134 @@ namespace FlightMobileApp
             NetworkStream stream = tcpClient.GetStream();
             foreach (AsyncCommand command in commandsQueue.GetConsumingEnumerable())
             {
-                string message, response;
+                string message = null;
+                string response = null;
                 Result res = Result.Ok;
                 //get command 
                 if (command.isGet == true)
                 {
-                    message = "get /controls/flight/rudder\n";
-                    response = GetAndSet(message, stream,true);
-                    if (!response.Equals("disconnected"))
-                    {
-                        command.Command.Rudder = Double.Parse(response);
-                    }
-                    else
-                    {
-                        res = Result.NotOk;
-                    }
-                    message = "get /controls/flight/throttle\n";
-                    response = GetAndSet(message, stream,true);
-                    if (!response.Equals("disconnected"))
-                    {
-                        command.Command.Throttle = Double.Parse(response);
-                    }
-                    else
-                    {
-                        res = Result.NotOk;
-                    }
-                    message = "get /controls/flight/elevator\n";
-                    response = GetAndSet(message, stream,true);
-                    if (!response.Equals("disconnected"))
-                    {
-                        command.Command.Elevator = Double.Parse(response);
-                    }
-                    else
-                    {
-                        res = Result.NotOk;
-                    }
-                    message = "get /controls/flight/aileron\n";
-                    response = GetAndSet(message, stream,true);
-                    if (!response.Equals("disconnected"))
-                    {
-                        command.Command.Aileron = Double.Parse(response);
-                    }
-                    else
-                    {
-                        res = Result.NotOk;
-                    }
+                    message = "get /controls/flight/aileron\n" + "get /controls/flight/rudder\n" +
+                    "get /controls/flight/elevator\n" + "get /controls/engines/current-engine/throttle\n";
+                    response = GetAndSet(message, stream, true);
+                    //command.Command = JsonConvert.DeserializeObject<Command>(response);
+                    Debug.WriteLine(response.ToString());
+                    
+
+                    //message = "get /controls/flight/rudder\n";
+                    //response = GetAndSet(message, stream, true);
+                    //if (!response.Equals("disconnected"))
+                    //{
+                    //    command.Command.Rudder = Double.Parse(response);
+                    //}
+                    //else
+                    //{
+                    //    res = Result.NotOk;
+                    //}
+                    //message = "get /controls/engines/engine/throttle\n";
+                    //response = GetAndSet(message, stream, true);
+                    //if (!response.Equals("disconnected"))
+                    //{
+                    //    command.Command.Throttle = Double.Parse(response);
+                    //}
+                    //else
+                    //{
+                    //    res = Result.NotOk;
+                    //}
+                    //message = "get /controls/flight/elevator\n";
+                    //response = GetAndSet(message, stream, true);
+                    //if (!response.Equals("disconnected"))
+                    //{
+                    //    command.Command.Elevator = Double.Parse(response);
+                    //}
+                    //else
+                    //{
+                    //    res = Result.NotOk;
+                    //}
+                    //message = "get /controls/flight/aileron\n";
+                    //response = GetAndSet(message, stream, true);
+                    //if (!response.Equals("disconnected"))
+                    //{
+                    //    command.Command.Aileron = Double.Parse(response);
+                    //}
+                    //else
+                    //{
+                    //    res = Result.NotOk;
+                    //}
                 }
                 //set command
                 else
                 {
-                    message = "set /controls/flight/rudder " + command.Command.Rudder + "\n";
-                    response = GetAndSet(message, stream,false);
-                    //send error to client
-                    if (response.Equals("disconnected"))
-                    {
-                        res = Result.NotOk;
-                    }
-                    message = "set /controls/flight/throttle " + command.Command.Throttle + "\n";
-                    response = GetAndSet(message, stream,false);
-                    //send error to client
-                    if (response.Equals("disconnected"))
-                    {
-                        res = Result.NotOk;
-                    }
-                    message = "set /controls/flight/elevator " + command.Command.Elevator + "\n";
-                    response = GetAndSet(message, stream,false);
-                    //send error to client
-                    if (response.Equals("disconnected"))
-                    {
-                        res = Result.NotOk;
-                    }
-                    message = "set /controls/flight/aileron " + command.Command.Aileron + "\n";
-                    response = GetAndSet(message, stream,false);
-                    //send error to client
-                    if (response.Equals("disconnected"))
-                    {
-                        res = Result.NotOk;
-                    }
+                    message = "set /controls/flight/aileron " + command.Command.Aileron.ToString() + "\n" +
+                        "set /controls/flight/rudder " + command.Command.Rudder.ToString() + "\n" +
+                    "set /controls/flight/elevator " + command.Command.Elevator.ToString() + "\n" +
+                    "set /controls/engines/current-engine/throttle " + command.Command.Throttle.ToString() + "\n";
+                    response = GetAndSet(message, stream, false);
+
+                    //message = "set /controls/flight/rudder " + command.Command.Rudder + "\n";
+                    //response = GetAndSet(message, stream, false);
+                    ////send error to client
+                    //if (response.Equals("disconnected"))
+                    //{
+                    //    res = Result.NotOk;
+                    //}
+                    //message = "set /controls/engines/current-engine/throttle " + command.Command.Throttle + "\n";
+                    //response = GetAndSet(message, stream, false);
+                    ////send error to client
+                    //if (response.Equals("disconnected"))
+                    //{
+                    //    res = Result.NotOk;
+                    //}
+                    //message = "set /controls/flight/elevator " + command.Command.Elevator + "\n";
+                    //response = GetAndSet(message, stream, false);
+                    ////send error to client
+                    //if (response.Equals("disconnected"))
+                    //{
+                    //    res = Result.NotOk;
+                    //}
+                    //message = "set /controls/flight/aileron " + command.Command.Aileron + "\n";
+                    //response = GetAndSet(message, stream, false);
+                    ////send error to client
+                    //if (response.Equals("disconnected"))
+                    //{
+                    //    res = Result.NotOk;
+                    //}
                 }
-                command.Completion.SetResult(res);
+                if (response != null)
+                {
+                    command.Completion.SetResult(res);
+                }
             }
         }
         public string GetAndSet(string message, NetworkStream stream, Boolean isGet)
         {
             // Receive the TcpServer.response.
             Byte[] data = System.Text.Encoding.ASCII.GetBytes(message);
-            try
-            {
-                stream = tcpClient.GetStream();
-            }
-            catch (InvalidOperationException)
-            {
-                return "disconnected";
-            }
+            //try
+            //{
+            //    stream = tcpClient.GetStream();
+            //}
+            //catch (InvalidOperationException)
+            //{
+            //    return "disconnected";
+            //}
             // Send the message to the connected TcpServer - the server need to know what kind of data I want. 
-            stream.Write(data, 0, data.Length);
+            tcpClient.GetStream().Write(data, 0, data.Length);
             String responseData = String.Empty;
-            if (isGet == true) {
+            if (isGet == true)
+            {
                 //Read the first batch of the TcpServer response bytes.
-                NetworkStream streamRead = tcpClient.GetStream();
-                if (streamRead.CanRead)
+                if (tcpClient.GetStream().CanRead)
                 {
-                    //firstConnection();
                     Byte[] readData = new byte[1024];
-                    //Debug.WriteLine("POSITION= ",stream.Position);
-                    int bytes = streamRead.Read(readData, 0, 1024);
-                    responseData = System.Text.Encoding.ASCII.GetString(readData, 0, bytes);
+                    do
+                    {
+                        int bytes = tcpClient.GetStream().Read(readData, 0, 1024);
+                        responseData = System.Text.Encoding.ASCII.GetString(readData, 0, bytes);
+                    }
+                    while (tcpClient.GetStream().DataAvailable);
+
+                    //int bytes = stream.Read(readData, 0, 50);
+
                     return responseData;
                 }
                 else

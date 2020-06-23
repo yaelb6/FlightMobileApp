@@ -37,7 +37,7 @@ namespace FlightMobileApp
         {
             Boolean isGet = true;
             var contentt = await this.telnetClient.Execute(cmd, isGet);
-            cmd = JsonConvert.DeserializeObject<Command>(cmd.ToString());
+            //cmd = JsonConvert.DeserializeObject<Command>(cmd.ToString());
             return cmd;
         }
 
@@ -58,7 +58,11 @@ namespace FlightMobileApp
 
             Debug.WriteLine("AFTERRRRRR");
             Console.WriteLine("AFTERRRRRR");
+            await this.Get();
+
             return cmd;
+
+
         }
 
         [Route("screenshot")]
