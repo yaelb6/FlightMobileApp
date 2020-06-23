@@ -30,14 +30,16 @@ namespace FlightMobileApp
             telnetClient.Start();
         }
 
-        // GET: /<controller>/
-        //public async Task<ActionResult<Command>> Get()
-        //{
-        //    Boolean isGet = true;
-        //    var contentt = await this.telnetClient.Execute(cmd, isGet);
-        //    cmd = JsonConvert.DeserializeObject<Command>(cmd.ToString());
-        //    return cmd;
-        //}
+        //GET: /<controller>/
+        [Route("api/command")]
+        [HttpGet]
+        public async Task<ActionResult<Command>> Get()
+        {
+            Boolean isGet = true;
+            var contentt = await this.telnetClient.Execute(cmd, isGet);
+            cmd = JsonConvert.DeserializeObject<Command>(cmd.ToString());
+            return cmd;
+        }
 
         [Route("api/command")]
         [HttpPost]
@@ -53,8 +55,6 @@ namespace FlightMobileApp
 
             cmd = new Command(newC.Aileron, newC.Rudder, newC.Elevator, newC.Throttle);
             var contentt = await this.telnetClient.Execute(cmd, isGet);
-            //var deserializedTickers = JsonConvert.DeserializeObject<Command>(contentt.ToString());
-            //cmd = JsonConvert.DeserializeObject<Command>(cmd.ToString());
 
             Debug.WriteLine("AFTERRRRRR");
             Console.WriteLine("AFTERRRRRR");
