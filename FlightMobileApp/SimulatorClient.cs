@@ -140,16 +140,24 @@ namespace FlightMobileApp
             stream.Write(data, 0, data.Length);
             String responseData = String.Empty;
             // Read the first batch of the TcpServer response bytes.
-            if (stream.CanRead)
-            {
-                Int32 bytes = stream.Read(data, 0, data.Length);
-                responseData = System.Text.Encoding.ASCII.GetString(data, 0, bytes);
-                return responseData;
-            }
-            else
-            {
-                return "disconnected";
-            }
+            //if (stream.CanRead)
+            //{
+            //    Int32 bytes = stream.Read(data, 0, data.Length);
+            //    responseData = System.Text.Encoding.ASCII.GetString(data, 0, bytes);
+            //    return responseData;
+            //}
+            //else
+            //{
+            //    return "disconnected";
+            //}
+            return "ok";
+        }
+        public void firstConnection()
+        {
+            NetworkStream stream = tcpClient.GetStream();
+            Byte[] data = System.Text.Encoding.ASCII.GetBytes("data\n");
+            // Send the message to the connected TcpServer - the server need to know what kind of data I want. 
+            stream.Write(data, 0, data.Length);
         }
     }
 }
