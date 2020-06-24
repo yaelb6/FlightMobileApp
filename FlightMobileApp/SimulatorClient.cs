@@ -19,20 +19,14 @@ namespace FlightMobileApp
         public SimulatorClient()
         {
             commandsQueue = new BlockingCollection<AsyncCommand>();
-            //Define Ip and port from app config.
             connectionIp = "127.0.0.1";
             connectionPort = 5403;
-            firstConnection();
+            tcpClient = new TcpClient();
             Start();
-            //tcpClient = new TcpClient(connectionIp, connectionPort);
-
         }
-        // Called by the WebApi Controller, it will await on the returned Task<>
-        // This is not an async method, since it does not await anything.
-        public Task<Result> Execute(Command cmd, Boolean getOrSet)
+        public Task<Result> Execute(Command cmd)
         {
             var asyncCommand = new AsyncCommand(cmd);
-            asyncCommand.isGet = getOrSet;
             commandsQueue.Add(asyncCommand);
             return asyncCommand.Task;
         }
@@ -43,104 +37,97 @@ namespace FlightMobileApp
 
         public void ProcessCommands()
         {
+            tcpClient.Connect(connectionIp, connectionPort);
             NetworkStream stream = tcpClient.GetStream();
+            firstConnection();
             foreach (AsyncCommand command in commandsQueue.GetConsumingEnumerable())
             {
                 string message = null;
                 string response = null;
                 Result res = Result.Ok;
-                //get command 
-                if (command.isGet == true)
+                message = "set /controls/flight/aileron " + command.Command.Aileron.ToString() + "\n" +
+                "set /controls/flight/rudder " + command.Command.Rudder.ToString() + "\n" +
+                "set /controls/flight/elevator " + command.Command.Elevator.ToString() + "\n" +
+                "set /controls/engines/current-engine/throttle " + command.Command.Throttle.ToString() + "\n";
+                Byte[] data = System.Text.Encoding.ASCII.GetBytes(message);
+                // Send the message to the connected TcpServer - the server need to know what kind of data I want. 
+                tcpClient.GetStream().Write(data, 0, data.Length);
+                if (GetAndCheck(command.Command) == false)
                 {
-                    try
-                    {
-                        message = "get /controls/flight/aileron\n" + "get /controls/flight/rudder\n" +
-                        "get /controls/flight/elevator\n" + "get /controls/engines/current-engine/throttle\n";
-                        //response = GetAndSet(message, stream, true);
-                        //Debug.WriteLine(response.ToString());
-                        Byte[] data = System.Text.Encoding.ASCII.GetBytes(message);
-                        tcpClient.GetStream().Write(data, 0, data.Length);
-                        String responseData = String.Empty;
-                        Byte[] readData = new byte[1024];
-                        do
-                        {
-                            int bytes = tcpClient.GetStream().Read(readData, 0, 1024);
-                            responseData = System.Text.Encoding.ASCII.GetString(readData, 0, bytes);
-                        }
-                        while (tcpClient.GetStream().DataAvailable);
-                    }
-                    catch(Exception)
-                    {
-                        res = Result.NotOk;
-                    }
-            }
-                //set command
-                else
-                {
-                    try
-                    {
-                        message = "set /controls/flight/aileron " + command.Command.Aileron.ToString() + "\n" +
-                            "set /controls/flight/rudder " + command.Command.Rudder.ToString() + "\n" +
-                        "set /controls/flight/elevator " + command.Command.Elevator.ToString() + "\n" +
-                        "set /controls/engines/current-engine/throttle " + command.Command.Throttle.ToString() + "\n";
-                        Byte[] data = System.Text.Encoding.ASCII.GetBytes(message);
-                        // Send the message to the connected TcpServer - the server need to know what kind of data I want. 
-                        tcpClient.GetStream().Write(data, 0, data.Length);
-                        String responseData = String.Empty;
-                    }
-                    catch(Exception)
-                    {
-                        res = Result.NotOk;
-                    }
-
+                    res = Result.NotOk;
                 }
-                if (response != null)
-                {
-                    command.Completion.SetResult(res);
-                }
+                command.Completion.SetResult(res);
             }
         }
-        public string GetAndSet(string message, NetworkStream stream, Boolean isGet)
+        public bool GetAndCheck(Command cmd)
         {
-            // Receive the TcpServer.response.
+            string message;
+            message = "get /controls/flight/aileron\n";
             Byte[] data = System.Text.Encoding.ASCII.GetBytes(message);
-            
-            // Send the message to the connected TcpServer - the server need to know what kind of data I want. 
             tcpClient.GetStream().Write(data, 0, data.Length);
             String responseData = String.Empty;
-            if (isGet == true)
+            Byte[] readData = new byte[1024];
+            if (tcpClient.GetStream().CanRead)
             {
-                //Read the first batch of the TcpServer response bytes.
-                if (tcpClient.GetStream().CanRead)
+                int bytes = tcpClient.GetStream().Read(readData, 0, 1024);
+                responseData = System.Text.Encoding.ASCII.GetString(readData, 0, bytes);
+                Debug.WriteLine("aileron: ", responseData);
+                if (Math.Abs(cmd.Aileron - double.Parse(responseData)) > 0.00001)
                 {
-                    Byte[] readData = new byte[1024];
-                    do
-                    {
-                        int bytes = tcpClient.GetStream().Read(readData, 0, 1024);
-                        responseData = System.Text.Encoding.ASCII.GetString(readData, 0, bytes);
-                    }
-                    while (tcpClient.GetStream().DataAvailable);
-
-                    //int bytes = stream.Read(readData, 0, 50);
-
-                    return responseData;
-                }
-                else
-                {
-                    return "disconnected";
+                    return false;
                 }
             }
-            else
+            message = "get /controls/flight/rudder\n";
+            data = System.Text.Encoding.ASCII.GetBytes(message);
+            tcpClient.GetStream().Write(data, 0, data.Length);
+            responseData = String.Empty;
+            readData = new byte[1024];
+            if (tcpClient.GetStream().CanRead)
             {
-                return "ok";
+                int bytes = tcpClient.GetStream().Read(readData, 0, 1024);
+                responseData = System.Text.Encoding.ASCII.GetString(readData, 0, bytes);
+                Debug.WriteLine("rudder: ", responseData);
+                if (Math.Abs(cmd.Rudder - double.Parse(responseData)) > 0.00001)
+                {
+                    return false;
+                }
             }
+            message = "get /controls/flight/elevator\n";
+            data = System.Text.Encoding.ASCII.GetBytes(message);
+            tcpClient.GetStream().Write(data, 0, data.Length);
+            responseData = String.Empty;
+            readData = new byte[1024];
+            if (tcpClient.GetStream().CanRead)
+            {
+                int bytes = tcpClient.GetStream().Read(readData, 0, 1024);
+                responseData = System.Text.Encoding.ASCII.GetString(readData, 0, bytes);
+                Debug.WriteLine("elevator: ", responseData);
+                if (Math.Abs(cmd.Elevator - double.Parse(responseData)) > 0.00001)
+                {
+                    return false;
+                }
+            }
+            message = "get /controls/engines/current-engine/throttle\n";
+            data = System.Text.Encoding.ASCII.GetBytes(message);
+            tcpClient.GetStream().Write(data, 0, data.Length);
+            responseData = String.Empty;
+            readData = new byte[1024];
+            if (tcpClient.GetStream().CanRead)
+            {
+                int bytes = tcpClient.GetStream().Read(readData, 0, 1024);
+                responseData = System.Text.Encoding.ASCII.GetString(readData, 0, bytes);
+                Debug.WriteLine("throttle: ", responseData);
+                if (Math.Abs(cmd.Throttle - double.Parse(responseData)) > 0.00001)
+                {
+                    return false;
+                }
+            }
+            return true;
         }
         public void firstConnection()
         {
-            tcpClient = new TcpClient(connectionIp, connectionPort);
             NetworkStream stream = tcpClient.GetStream();
-            Byte[] data = System.Text.Encoding.ASCII.GetBytes("data\n");
-            // Send the message to the connected TcpServer - the server need to know what kind of data I want. 
+            Byte[] data = System.Text.Encoding.ASCII.GetBytes("data\n"); 
             stream.Write(data, 0, data.Length);
         }
     }
