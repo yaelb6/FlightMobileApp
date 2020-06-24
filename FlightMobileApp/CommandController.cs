@@ -27,7 +27,7 @@ namespace FlightMobileApp
         public CommandController()
         {
             this.telnetClient = new SimulatorClient();
-            telnetClient.Start();
+            //telnetClient.Start();
         }
 
         //GET: /<controller>/
