@@ -8,7 +8,7 @@ namespace FlightMobileApp
     public enum Result { Ok, NotOk }
     public class AsyncCommand
     {
-        public Command Command { get; private set; }
+        public Command Command { get; set; }
         public Task<Result> Task { get => Completion.Task; }
         public TaskCompletionSource<Result> Completion { get; private set; }
         public Boolean isGet { get; set; }
